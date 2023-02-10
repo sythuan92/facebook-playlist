@@ -1,0 +1,27 @@
+import requests
+import re
+import os
+
+def download_video(url, file_name):
+    page = requests.get(url)
+    src = re.search('sd_src:"(.+?)"', page.text).group(1)
+    response = requests.get(src, stream=True)
+    with open(file_name, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+
+def download_playlist(playlist_url, save_path):
+    page = requests.get(playlist_url)
+    video_ids = re.findall('video_id":"(\d+)"', page.text)
+    for video_id in video_ids:
+        video_url = f'https://www.facebook.com/watch/?v={video_id}'
+        video_page = requests.get(video_url)
+        video_title = re.search('title":"(.+?)"', video_page.text).group(1)
+        video_file = os.path.join(save_path, video_title + '.mp4')
+        download_video(video_url, video_file)
+
+if __name__ == '__main__':
+    playlist_url = input('Enter the URL of the Facebook playlist: ')
+    save_path = input('Enter the directory to save the videos: ')
+    download_playlist(playlist_url, save_path)
