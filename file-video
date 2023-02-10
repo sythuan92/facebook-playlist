@@ -1,0 +1,16 @@
+import requests
+import re
+
+def download_video(url, file_name):
+    page = requests.get(url)
+    src = re.search('sd_src:"(.+?)"', page.text).group(1)
+    response = requests.get(src, stream=True)
+    with open(file_name, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+
+if __name__ == '__main__':
+    url = input('Enter the URL of the Facebook video: ')
+    file_name = input('Enter the file name to save the video: ')
+    download_video(url, file_name)
